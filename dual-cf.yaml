@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  SubnetID:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet to deploy EC2 instance into
+  SecurityGroupIDs:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: List of Security Groups to add to EC2 instance
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: >-
+      Name of an existing EC2 KeyPair to enable SSH access to the instance
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+  InstanceCount:
+    Description: Number of EC2 instances (must be between 1 and 2).
+    Type: Number
+    Default: 1
+    MinValue: 1
+    MaxValue: 2
+    ConstraintDescription: Must be a number between 1 and 2.
+Mappings:
+  AWSRegionToAMI:
+    us-east-1:
+      AMIID: ami-0b33d91d
+    us-east-2:
+      AMIID: ami-c55673a0
+      
+Conditions:
+  Launch1: !Equals [1, 1]
+  Launch2: !Not [!Equals [1, !Ref InstanceCount]]
+  
+Resources:
+  Instance1:
+    Condition: Launch1
+    Type: AWS::EC2::Instance                     
+    Properties:
+      ImageId:
+        !FindInMap                                 
+          - AWSRegionToAMI                         
+          - !Ref AWS::Region
+          - AMIID
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds: !Ref SecurityGroupIDs
+      SubnetId: !Ref SubnetID
+      UserData:
+        Fn::Base64:                                
+          !Sub |
+              #!/bin/bash -ex
+              yum install -y httpd;
+              echo "<html>This is instance 1</html>" > /var/www/html/index.html;
+              cd /var/www/html;
+              chmod 755 index.html;
+              service httpd start;
+              chkconfig httpd on;
+      Tags:                                      
+        -                                        
+          Key: Name
+          Value: CloudFormation Test - YAML      
+        -
+          Key: Environment
+          Value: Development
+
+  Instance2:
+    Condition: Launch2
+    Type: AWS::EC2::Instance                     
+    Properties:
+      ImageId:
+        !FindInMap                                 
+          - AWSRegionToAMI                         
+          - !Ref AWS::Region
+          - AMIID
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds: !Ref SecurityGroupIDs
+      SubnetId: !Ref SubnetID
+      UserData:
+        Fn::Base64:                                
+          !Sub |
+              #!/bin/bash -ex
+              yum install -y httpd;
+              echo "<html>This is instance 2</html>" > /var/www/html/index.html;
+              cd /var/www/html;
+              chmod 755 index.html;
+              service httpd start;
+              chkconfig httpd on;
+      Tags:                                      
+        -                                        
+          Key: Name
+          Value: CloudFormation Test - YAML      
+        -
+          Key: Environment
+          Value: Development
