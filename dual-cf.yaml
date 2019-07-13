@@ -24,9 +24,9 @@ Parameters:
 Mappings:
   AWSRegionToAMI:
     us-east-1:
-      AMIID: ami-0b33d91d
+      AMIID: ami-03ee6b2e8aef877dd
     us-east-2:
-      AMIID: ami-c55673a0
+      AMIID: ami-07c1f6a8351e1da11
       
 Conditions:
   Launch1: !Equals [1, 1]
